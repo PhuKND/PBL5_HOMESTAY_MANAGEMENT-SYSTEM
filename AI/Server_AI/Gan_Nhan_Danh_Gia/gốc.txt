@@ -1,0 +1,24 @@
+import tensorflow as tf
+from transformers import BertTokenizer, TFBertForSequenceClassification
+import numpy as np
+
+tokenizer = BertTokenizer.from_pretrained('./', local_files_only=True)
+model = TFBertForSequenceClassification.from_pretrained('./', local_files_only=True)
+model.load_weights("tf_model.h5")
+
+id2label = {0: "negative", 1: "positive"}
+
+def predict_sentiment(text):
+    inputs = tokenizer([text], return_tensors="tf", padding=True, truncation=True, max_length=128)
+    outputs = model(inputs)
+    probs = tf.nn.softmax(outputs.logits, axis=1).numpy()
+    pred = np.argmax(probs)
+    print(f"→ Kết quả: {id2label[pred]} (xác suất: {probs[0][pred]:.2f})\n")
+
+print("Nhập đánh giá (gõ 'x' để thoát):")
+while True:
+    review = input(">> ")
+    if review.strip().lower() == 'x':
+        break
+    if review.strip():
+        predict_sentiment(review.strip())
